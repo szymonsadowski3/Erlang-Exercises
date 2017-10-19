@@ -1,0 +1,58 @@
+with Ada.Text_IO;use Ada.Text_IO;
+with Ada.Integer_Text_IO;use Ada.Integer_Text_IO;
+with Ada.Numerics.Float_Random;use Ada.Numerics.Float_Random;
+
+procedure main is
+   type Wektor is array (Integer range <>) of Float;
+   W1: Wektor(1 .. 20) := (others => 3.0);
+
+   procedure Randomizer(V : in out Wektor) is
+     G : Generator;
+   begin
+     Reset(G);
+     for Index in V'Range loop
+       V(Index) := Random(G);
+     end loop;
+   end Randomizer;
+
+   procedure Displayer(V : in Wektor) is
+   begin
+     for E of V loop
+      Put_Line("Element= " & E'Img);
+     end loop;
+   end Displayer;
+
+   function IsSorted(A: in Wektor) return Boolean is
+     (for all I in A'First..(A'Last-1) => A(I) < A(I+1));
+
+   function Max(V: in out Wektor; Starting_index: in Integer) return Integer is
+   Curr_max: Integer;
+   begin
+     Curr_max := Starting_index;
+     for I in Starting_index..V'Last loop
+       if V(Curr_max) > V(I) then
+         Curr_max := I;
+       end if;
+     end loop;
+
+     return Curr_max;
+   end Max;
+
+   procedure SortVector(V: in out Wektor) is
+     Temp: Float;
+     Max_index: Integer;
+   begin
+     for I in V'range loop
+       Max_index:=Max(V, I);
+       Temp:= V(I);
+       V(I):=V(Max_index);
+       V(Max_index):=Temp;
+     end loop;
+   end SortVector;
+
+ begin
+   Randomizer(W1);
+   SortVector(W1);
+   Displayer(W1);
+   Put_Line("IsSorted= " & IsSorted(W1)'Img);
+ end main;

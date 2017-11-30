@@ -1,18 +1,25 @@
--module(ppk).
--compile([export_all]).
-
 konsument(DataReceived)->
   receive
     {_,posrednik} -> io:format(DataReceived)
   end.
 
-posrednik(DataReceived)->
-  receive
-    {Od,agh} ->
-      POSRid = spawn(ppk, konsument, [DataReceived]),
+posrednik()->
+receive
+    {Od, Dane} ->
+      POSRid = spawn(ppk, konsument, [Dane]),
       POSRid!{self(),posrednik}
-  end.
+  end,
+  posrednik().
 
-producent()->
- FPid=spawn(ppk,posrednik,["dane od posrednika"]),
- FPid!{self(),agh}.
+producent(_, 0)->0;
+
+producent(FPid, N)->
+  FPid!{self(), "dane od posrednika ~n"},
+  producent(FPid, N-1).
+
+producentInit(N)->
+ FPid=spawn(ppk,posrednik,[]),
+ producent(FPid, N).
+
+fmain() ->
+  FPid=spawn(ppk,producentInit,[2]).

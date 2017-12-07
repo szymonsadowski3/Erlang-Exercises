@@ -1,0 +1,26 @@
+-module(mapMulti).
+-import(maps, [map/2]).
+-import(lists, [nth/2, seq/2]).
+-compile([export_all]).
+
+n_length_chunks([],_) -> [];
+n_length_chunks(List,Len) when Len > length(List) ->
+    [List];
+n_length_chunks(List,Len) ->
+    {Head,Tail} = lists:split(Len,List),
+    [Head | n_length_chunks(Tail,Len)].
+
+multiMap(Func, ListInput) ->
+  Self = self(),
+  ChunkedList = n_length_chunks(ListInput, 2),
+  ListOfPids = [spawn(mapMulti, applyMap, [Self, Func, nth(N, ChunkedList)]) || N <- lists:seq(1, length(ListInput)) ],
+  [ receive {R} -> R end || Pid <- ListOfPids ].
+
+applyMap(Self, Func, ListInput) -> Self !{ map(Func, ListInput)}.
+
+fmain() ->
+  ListaInput = [1, 2, 3, 4, 5, 6],
+  ListaOutput = multiMap(foo, ListaInput),
+  io:format("end").
+
+foo(a) -> a + 2.
